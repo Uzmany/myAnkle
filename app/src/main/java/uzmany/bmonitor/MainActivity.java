@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
 
     private BluetoothGatt mConnectedGatt;
 
-    private TextView mTemperature, mHumidity, mPressure, mLux, mMov;
+    private TextView mTemperature, mHumidity, mPressure, mLux, mMov,mMov2,mMov3;
 
     private ProgressDialog mProgress;
 
@@ -134,6 +134,8 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
          * We are going to display the results in some text fields
          */
         mMov = (TextView) findViewById(R.id.text_mov);
+        mMov2 = (TextView) findViewById(R.id.text_mov2);
+        mMov3 = (TextView) findViewById(R.id.text_mov3);
         mTemperature = (TextView) findViewById(R.id.text_temperature);
         mHumidity = (TextView) findViewById(R.id.text_humidity);
         mPressure = (TextView) findViewById(R.id.text_pressure);
@@ -248,6 +250,8 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
         mPressure.setText("---");
         mLux.setText("---");
         mMov.setText("---");
+        mMov2.setText("---");
+        mMov3.setText("---");
     }
 
 
@@ -634,12 +638,28 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
 
     /* Methods to extract sensor data and update the UI */
     private void updateMovValues(BluetoothGattCharacteristic characteristic) {
-        double humidity = SensorTagData.extractLux(characteristic);
-        mMov.setText(String.format("%.02f%%", humidity));
+        //double humidity = SensorTagData.extractLux(characteristic);
+        //mMov.setText(String.format("%.2f", humidity));
+
+        byte[] value = characteristic.getValue();
+        Point3D v;
+
+        v = SensorTagData.extractMov_Acc(value);
+        mMov.setText(String.format("X:%.2fG, Y:%.2fG, Z:%.2fG", v.x,v.y,v.z));
+
+        v = SensorTagData.extractMov_Gyro(value);
+        mMov2.setText(String.format("X:%.2f'/s, Y:%.2f'/s, Z:%.2f'/s", v.x,v.y,v.z));
+
+        //MAG - PRETTY MUCH USELESS. ABSOLUTE POSITIONING IN NSEW PLANE
+        v = SensorTagData.extractMov_Mag(value);
+        mMov3.setText(String.format("X:%.2fuT, Y:%.2fuT, Z:%.2fuT", v.x,v.y,v.z));
     }
+
+
+
     private void updateLuxValues(BluetoothGattCharacteristic characteristic) {
         double humidity = SensorTagData.extractLux(characteristic);
-        mLux.setText(String.format("%.02f%%", humidity));
+        mLux.setText(String.format("%.2f", humidity));
     }
     private void updateHumidityValues(BluetoothGattCharacteristic characteristic) {
         double humidity = SensorTagData.extractHumidity(characteristic);
