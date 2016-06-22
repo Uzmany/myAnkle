@@ -1,5 +1,6 @@
 package uzmany.bmonitor;
 
+import android.graphics.Color;
 import android.support.v7.widget.Toolbar;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -114,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
 
     private BluetoothGatt mConnectedGatt;
 
-    private TextView mTemperature, mHumidity, mPressure, mLux, mMov,mMov2,mMov3;
+    private TextView mTemperature, mHumidity, mPressure, mLux, mMov,mMov2,mMov3, mPer, mPer2, mPer3, mStability;
 
     private ProgressDialog mProgress;
 
@@ -133,9 +134,15 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
         /*
          * We are going to display the results in some text fields
          */
+        mStability = (TextView) findViewById(R.id.text_stabilitylevel);
         mMov = (TextView) findViewById(R.id.text_mov);
         mMov2 = (TextView) findViewById(R.id.text_mov2);
         mMov3 = (TextView) findViewById(R.id.text_mov3);
+
+        mPer = (TextView) findViewById(R.id.text_per);
+        mPer2 = (TextView) findViewById(R.id.text_per2);
+        mPer3 = (TextView) findViewById(R.id.text_per3);
+
         mTemperature = (TextView) findViewById(R.id.text_temperature);
         mHumidity = (TextView) findViewById(R.id.text_humidity);
         mPressure = (TextView) findViewById(R.id.text_pressure);
@@ -252,6 +259,10 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
         mMov.setText("---");
         mMov2.setText("---");
         mMov3.setText("---");
+        mPer.setText("---");
+        mPer2.setText("---");
+        mPer3.setText("---");
+        mStability.setText("---");
     }
 
 
@@ -636,27 +647,97 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
         }
     };
 
+
     /* Methods to extract sensor data and update the UI */
+    public int whichmethod=1;
+    Point3D ov=null, ov2=null, ov3=null;
+    double st1=0,st2=0,st3=0;
+    double st1s=0,st2s=0,st3s=0;
+    double totalstable;
+
     private void updateMovValues(BluetoothGattCharacteristic characteristic) {
         //double humidity = SensorTagData.extractLux(characteristic);
         //mMov.setText(String.format("%.2f", humidity));
 
         byte[] value = characteristic.getValue();
-        Point3D v;
+        Point3D v, v2,v3;
 
         v = SensorTagData.extractMov_Acc(value);
         mMov.setText(String.format("X:%.2fG, Y:%.2fG, Z:%.2fG", v.x,v.y,v.z));
 
-        v = SensorTagData.extractMov_Gyro(value);
-        mMov2.setText(String.format("X:%.2f'/s, Y:%.2f'/s, Z:%.2f'/s", v.x,v.y,v.z));
+        v2 = SensorTagData.extractMov_Gyro(value);
+        mMov2.setText(String.format("X:%.2f'/s, Y:%.2f'/s, Z:%.2f'/s", v2.x,v2.y,v2.z));
 
         //MAG - PRETTY MUCH USELESS. ABSOLUTE POSITIONING IN NSEW PLANE
-        v = SensorTagData.extractMov_Mag(value);
-        mMov3.setText(String.format("X:%.2fuT, Y:%.2fuT, Z:%.2fuT", v.x,v.y,v.z));
+        v3 = SensorTagData.extractMov_Mag(value);
+        mMov3.setText(String.format("X:%.2fuT, Y:%.2fuT, Z:%.2fuT", v3.x,v3.y,v3.z));
+
+
+        double stablelevel = Math.abs(v2.x) + Math.abs(v2.y) +Math.abs(v2.z) ;
+
+        if (st1 == 0) {st1s = stablelevel; st1 = 1; st2= 0;}
+        else if (st2 == 0) {st2s = stablelevel; st2 = 1; st3 =0;}
+        else if (st3 == 0) {st3s = stablelevel; st3 = 1; st1 =0;}
+
+        totalstable = st1s+st2s+st3s;
+        mStability.setText(String.format("%.2f", totalstable));
+
+        mStability.setTextColor(Color.parseColor("#FF0000"));
+        if (totalstable<100) {mStability.setTextColor(Color.parseColor("#FFD700"));}
+        if (totalstable<50) {mStability.setTextColor(Color.parseColor("#00FF00"));}
+        if (totalstable<30) {mStability.setTextColor(Color.parseColor("#0000FF"));}
+
+         ov=v;
+        ov2=v2;
+        ov3=v3;
+        if (whichmethod == 1)
+            checkstabilityofmethod(v,ov);
+        if (whichmethod == 2)
+            checkstabilityofmethod(v2,ov2);
+        if (whichmethod == 3)
+            checkstabilityofmethod(v3,ov3);
+
+
+
+    }
+
+    public void checkstabilityofmethod(Point3D v2, Point3D ov2) {
+        if (ov2 != null) {
+            if (ov2.x != 0)
+                mPer.setText(String.format("%.2f", checkstability(v2.x, ov2.x)));
+            else
+                mPer.setText("X");
+            if (ov2.y != 0)
+                mPer2.setText(String.format("%.2f", checkstability(v2.y, ov2.y)));
+            else
+                mPer2.setText("X");
+            if (ov2.z != 0)
+                mPer3.setText(String.format("%.2f", checkstability(v2.z, ov2.z)));
+            else
+                mPer3.setText("X");
+        }
+    }
+    public double checkstability(double newval, double oldval) {
+        double percent;
+            percent = ((newval / oldval)/(oldval)) * 100;
+        return percent;
+    }
+    public void do1(View v) {
+        whichmethod=1;
+    }
+    public void do2(View v) {
+        whichmethod=2;
+    }
+    public void do3(View v) {
+        whichmethod=3;
     }
 
 
 
+
+
+
+    // END OF MOVEMENT EXTRACTION
     private void updateLuxValues(BluetoothGattCharacteristic characteristic) {
         double humidity = SensorTagData.extractLux(characteristic);
         mLux.setText(String.format("%.2f", humidity));

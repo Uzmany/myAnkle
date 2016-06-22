@@ -42,8 +42,8 @@
             android:paddingTop="100dp"
 
             android:gravity="center_horizontal"
-            android:textSize="40sp"
-            android:text="USS: Usman's Sexy Sensors"/>
+            android:textSize="30dp"
+            android:text="LOL LMAO WTF?"/>
         <TableRow>
             <TextView
                 android:id="@+id/text_temperature"
@@ -134,6 +134,44 @@
                 android:textSize="@dimen/label_text_size"
                 android:gravity="center_horizontal"
                 android:text="Movement"/>
+        </TableRow>
+        <TableRow>
+            <Button
+                android:layout_column="0"
+                android:id="@+id/button1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="do1"
+                android:text="1" />
+
+            <Button
+                android:layout_column="1"
+                android:id="@+id/button2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="do2"
+                android:text="2" />
+            <Button
+                android:layout_column="2"
+                android:id="@+id/button3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="do3"
+                android:text="3" />
+        </TableRow>
+        <TableRow>
+            <TextView
+                android:text="STABILITY INDEX"
+                android:layout_column="0"
+                android:textSize="20dp"
+                android:gravity="center_horizontal"
+                />
+            <TextView
+                android:id="@+id/text_stabilitylevel"
+                android:layout_column="1"
+                android:textSize="20dp"
+                android:gravity="center_horizontal"
+                />
         </TableRow>
     </TableLayout>
 
