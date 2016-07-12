@@ -1,6 +1,18 @@
 package uzmany.bmonitor;
 
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
+import android.location.Location;
+import android.os.IBinder;
+import android.os.Messenger;
+import android.support.v7.view.menu.MenuView;
 import android.support.v7.widget.Toolbar;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -31,127 +43,90 @@ import android.view.MenuItem;
         import android.view.Menu;
         import android.view.MenuItem;
         import android.view.Window;
-        import android.widget.TextView;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
         import android.widget.Toast;
+import android.widget.ToggleButton;
 
 
-        import java.util.UUID;
+import java.util.UUID;
 
-/**
- * Created by Dave Smith
- * Double Encore, Inc.
- * MainActivity
- */
 public class MainActivity extends AppCompatActivity implements BluetoothAdapter.LeScanCallback {
-    private static final String TAG = "BluetoothGattActivity";
 
+    private static final int STABILITY_TAB = 1;
+    private static final int HISTORY_TAB =2;
+    private static final int PLAY_TAB =3;
+    private static int tab_view=STABILITY_TAB;
+
+    private static final String TAG = "BluetoothGattActivity";
     private static final String DEVICE_NAME = "CC2650 SensorTag";
 
-
     /* ACC Service */
-
-    private static final UUID MAG_SERVICE =     UUID.fromString("f000aa30-0451-4000-b000-000000000000");
-    private static final UUID MAG_DATA_CHAR =   UUID.fromString("f000aa31-0451-4000-b000-000000000000");
-    private static final UUID MAG_CONFIG_CHAR = UUID.fromString("f000aa32-0451-4000-b000-000000000000");
-
-    private static final UUID GYR_SERVICE =     UUID.fromString("f000aa50-0451-4000-b000-000000000000");
-    private static final UUID GYR_DATA_CHAR =   UUID.fromString("f000aa51-0451-4000-b000-000000000000");
-    private static final UUID GYR_CONFIG_CHAR = UUID.fromString("f000aa52-0451-4000-b000-000000000000");
-
-    private static final UUID ACC_SERVICE =     UUID.fromString("f000aa10-0451-4000-b000-000000000000");
-    private static final UUID ACC_DATA_CHAR =   UUID.fromString("f000aa11-0451-4000-b000-000000000000");
-    private static final UUID ACC_CONFIG_CHAR = UUID.fromString("f000aa12-0451-4000-b000-000000000000");
 
     private static final UUID MOV_SERVICE =     UUID.fromString("f000aa80-0451-4000-b000-000000000000");
     private static final UUID MOV_DATA_CHAR =   UUID.fromString("f000aa81-0451-4000-b000-000000000000");
     private static final UUID MOV_CONFIG_CHAR = UUID.fromString("f000aa82-0451-4000-b000-000000000000");
 
-
-
-
-/*
-    UUID_MAG_SERV = fromString("f000aa30-0451-4000-b000-000000000000"),
-    UUID_MAG_DATA = fromString("f000aa31-0451-4000-b000-000000000000"),
-    UUID_MAG_CONF = fromString("f000aa32-0451-4000-b000-000000000000"), // 0: disable, 1: enable
-    UUID_MAG_PERI = fromString("f000aa33-0451-4000-b000-000000000000"), // Period in tens of milliseconds
-
-    UUID_GYR_SERV = fromString("f000aa50-0451-4000-b000-000000000000"),
-    UUID_GYR_DATA = fromString("f000aa51-0451-4000-b000-000000000000"),
-    UUID_GYR_CONF = fromString("f000aa52-0451-4000-b000-000000000000"), // 0: disable, bit 0: enable x, bit 1: enable y, bit 2: enable z
-    UUID_GYR_PERI = fromString("f000aa53-0451-4000-b000-000000000000"), // Period in tens of milliseconds
-
-
-
-    UUID_ACC_SERV = fromString("f000aa10-0451-4000-b000-000000000000"),
-    UUID_ACC_DATA = fromString("f000aa11-0451-4000-b000-000000000000"),
-    UUID_ACC_CONF = fromString("f000aa12-0451-4000-b000-000000000000"), // 0: disable, 1: enable
-    UUID_ACC_PERI = fromString("f000aa13-0451-4000-b000-000000000000"), // Period in tens of milliseconds
-*/
-
-    /* LUX Service */
-    private static final UUID LUX_SERVICE = UUID.fromString("f000aa70-0451-4000-b000-000000000000");
-    private static final UUID LUX_DATA_CHAR = UUID.fromString("f000aa71-0451-4000-b000-000000000000");
-    private static final UUID LUX_CONFIG_CHAR = UUID.fromString("f000aa72-0451-4000-b000-000000000000");
-    //private static final UUID LUX_PER_CHAR = UUID.fromString("f000aa73-0451-4000-b000-000000000000");
-
-
-
-    /* Humidity Service */
-    private static final UUID HUMIDITY_SERVICE = UUID.fromString("f000aa20-0451-4000-b000-000000000000");
-    private static final UUID HUMIDITY_DATA_CHAR = UUID.fromString("f000aa21-0451-4000-b000-000000000000");
-    private static final UUID HUMIDITY_CONFIG_CHAR = UUID.fromString("f000aa22-0451-4000-b000-000000000000");
-    /* Barometric Pressure Service */
-    private static final UUID PRESSURE_SERVICE = UUID.fromString("f000aa40-0451-4000-b000-000000000000");
-    private static final UUID PRESSURE_DATA_CHAR = UUID.fromString("f000aa41-0451-4000-b000-000000000000");
-    private static final UUID PRESSURE_CONFIG_CHAR = UUID.fromString("f000aa42-0451-4000-b000-000000000000");
-    private static final UUID PRESSURE_CAL_CHAR = UUID.fromString("f000aa44-0451-4000-b000-000000000000");
-    //ACTUALLY AA43 NOT AA44
     /* Client Configuration Descriptor */
     private static final UUID CONFIG_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
-
 
     private BluetoothAdapter mBluetoothAdapter;
     private SparseArray<BluetoothDevice> mDevices;
 
     private BluetoothGatt mConnectedGatt;
 
-    private TextView mTemperature, mHumidity, mPressure, mLux, mMov,mMov2,mMov3, mPer, mPer2, mPer3, mStability;
-
+    private TextView DeviceSelection;
+    private TextView DeviceDescription;
     private ProgressDialog mProgress;
+
+    private static final int MSG_MOV = 105;
+    private static final int MSG_PROGRESS = 201;
+    private static final int MSG_DISMISS = 202;
+    private static final int MSG_CLEAR = 301;
+
+    public int whichmethod=1;
+    Point3D ov=null, ov2=null, ov3=null;
+    double st1=0,st2=0,st3=0;
+    double st1s=0,st2s=0,st3s=0;
+    double totalstable;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
-        
-		
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-		
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
         setContentView(R.layout.activity_main);
         setProgressBarIndeterminate(true);
-		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        Typeface custom_font_roboto = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Regular.ttf");
+
+        Typeface custom_font = Typeface.createFromAsset(getAssets(), "fonts/blair_itc_bold1.ttf");
+        Typeface custom_font_bold = Typeface.createFromAsset(getAssets(), "fonts/blair_itc_bold1.ttf");
+
+
+        TextView toolbarTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
+        toolbarTitle.setText("My Ankle");
+        toolbarTitle.setTextSize(16);
+        toolbarTitle.setTextColor(Color.parseColor("#ffffff"));
+
+        toolbar.setBackgroundColor(Color.parseColor("#d15851"));
+        LinearLayout devices_drop = (LinearLayout) findViewById(R.id.device_select_drop);
+        devices_drop.setBackgroundColor(Color.parseColor("#d15851"));
         /*
          * We are going to display the results in some text fields
          */
-        mStability = (TextView) findViewById(R.id.text_stabilitylevel);
-        mMov = (TextView) findViewById(R.id.text_mov);
-        mMov2 = (TextView) findViewById(R.id.text_mov2);
-        mMov3 = (TextView) findViewById(R.id.text_mov3);
 
-        mPer = (TextView) findViewById(R.id.text_per);
-        mPer2 = (TextView) findViewById(R.id.text_per2);
-        mPer3 = (TextView) findViewById(R.id.text_per3);
+        DeviceSelection = (TextView) findViewById(R.id.devices);
+        DeviceDescription = (TextView) findViewById(R.id.devices_detail);
 
-        mTemperature = (TextView) findViewById(R.id.text_temperature);
-        mHumidity = (TextView) findViewById(R.id.text_humidity);
-        mPressure = (TextView) findViewById(R.id.text_pressure);
-        mLux = (TextView) findViewById(R.id.text_lux);
-
-        /*
-         * Bluetooth in Android 4.3 is accessed via the BluetoothManager, rather than
-         * the old static BluetoothAdapter.getInstance()
-         */
         BluetoothManager manager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         mBluetoothAdapter = manager.getAdapter();
 
@@ -164,6 +139,9 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
         mProgress = new ProgressDialog(this);
         mProgress.setIndeterminate(true);
         mProgress.setCancelable(false);
+
+
+        onDraw(0);
     }
 
     @Override
@@ -174,7 +152,6 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
          * user to settings to enable it if they have not done so.
          */
         if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
-            //Bluetooth is disabled
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivity(enableBtIntent);
             finish();
@@ -191,8 +168,6 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
             finish();
             return;
         }
-
-        clearDisplayValues();
     }
 
     @Override
@@ -222,49 +197,47 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
         getMenuInflater().inflate(R.menu.main, menu);
         //Add any device elements we've discovered to the overflow menu
         for (int i=0; i < mDevices.size(); i++) {
-            BluetoothDevice device = mDevices.valueAt(i);
-            menu.add(0, mDevices.keyAt(i), 0, device.getName());
+            // THE THREE DOTS MENU BUTTON
+            //BluetoothDevice device = mDevices.valueAt(i);
+           // menu.add(0, mDevices.keyAt(i), 0, device.getName());
         }
 
+        for (int i=0; i < mDevices.size(); i++) {
+            BluetoothDevice device = mDevices.valueAt(i);
+            DeviceSelection.setText("CONNECT: " +device.getName() );
+            DeviceDescription.setText(device.getAddress() );
+        }
         return true;
     }
+
+    private boolean show_device_drop = true;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_scan:
+                if (show_device_drop) {
+                    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+                    TextView toolbarTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
+                    toolbarTitle.setText("My Ankle");
+                    toolbarTitle.setTextSize(18);
+                    findViewById(R.id.device_select_drop).setVisibility(View.GONE);
+                    show_device_drop = false;
+                }
+                else {
+                    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+                    TextView toolbarTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
+                    toolbarTitle.setText("Select Device");
+                    findViewById(R.id.device_select_drop).setVisibility(View.VISIBLE);
+                    show_device_drop=true;
+                }
                 mDevices.clear();
                 startScan();
                 return true;
             default:
-                //Obtain the discovered device to connect with
-                BluetoothDevice device = mDevices.get(item.getItemId());
-                Log.i(TAG, "Connecting to "+device.getName());
-                /*
-                 * Make a connection with the device using the special LE-specific
-                 * connectGatt() method, passing in a callback for GATT events
-                 */
-                mConnectedGatt = device.connectGatt(this, false, mGattCallback);
-                //Display progress UI
-                mHandler.sendMessage(Message.obtain(null, MSG_PROGRESS, "Connecting to "+device.getName()+"..."));
                 return super.onOptionsItemSelected(item);
         }
     }
-
-    private void clearDisplayValues() {
-        mTemperature.setText("---");
-        mHumidity.setText("---");
-        mPressure.setText("---");
-        mLux.setText("---");
-        mMov.setText("---");
-        mMov2.setText("---");
-        mMov3.setText("---");
-        mPer.setText("---");
-        mPer2.setText("---");
-        mPer3.setText("---");
-        mStability.setText("---");
-    }
-
 
     private Runnable mStopRunnable = new Runnable() {
         @Override
@@ -272,6 +245,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
             stopScan();
         }
     };
+
     private Runnable mStartRunnable = new Runnable() {
         @Override
         public void run() {
@@ -312,325 +286,16 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
      * one characteristic be read or written at a time until all of our sensors
      * are enabled and we are registered to get notifications.
      */
-    private BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
-
-        /* State Machine Tracking */
-        private int mState = 0;
-
-        private void reset() { mState = 0; }
-
-        private void advance() { mState++; }
-
-        /*
-         * Send an enable command to each sensor by writing a configuration
-         * characteristic.  This is specific to the SensorTag to keep power
-         * low by disabling sensors you aren't using.
-         */
-        private void enableNextSensor(BluetoothGatt gatt) {
-            BluetoothGattCharacteristic characteristic;
-            switch (mState) {
-                /*case 2:
-                    Log.d(TAG, "Enabling pressure cal");
-                    characteristic = gatt.getService(PRESSURE_SERVICE)
-                            .getCharacteristic(PRESSURE_CAL_CHAR);
-                    characteristic.setValue(new byte[] {0x02});
-                    break;*/
-                case 0:
-                    Log.d(TAG, "Enabling pressure");
-                    characteristic = gatt.getService(PRESSURE_SERVICE)
-                            .getCharacteristic(PRESSURE_CONFIG_CHAR);
-                    characteristic.setValue(new byte[] {0x01});
-                    break;
-                case 1:
-                    Log.d(TAG, "Enabling humidity");
-                    characteristic = gatt.getService(HUMIDITY_SERVICE)
-                            .getCharacteristic(HUMIDITY_CONFIG_CHAR);
-                    characteristic.setValue(new byte[] {0x01});
-                    break;
-                case 2:
-                    Log.d(TAG, "Enabling lux");
-                    characteristic = gatt.getService(LUX_SERVICE)
-                            .getCharacteristic(LUX_CONFIG_CHAR);
-                    characteristic.setValue(new byte[] {0x01});
-                    break;
-                case 3:
-                    Log.d(TAG, "Enabling mov");
-                    characteristic = gatt.getService(MOV_SERVICE)
-                            .getCharacteristic(MOV_CONFIG_CHAR);
-                    characteristic.setValue(new byte[] {0x7f, 0x00});
-                    //characteristic.setValue(new byte[] {0x00, 0x7f});
-                    break;
-                default:
-                    mHandler.sendEmptyMessage(MSG_DISMISS);
-                    Log.i(TAG, "All Sensors Enabled");
-                    return;
-            }
-
-            gatt.writeCharacteristic(characteristic);
-        }
-
-        /*
-         * Read the data characteristic's value for each sensor explicitly
-         */
-        private void readNextSensor(BluetoothGatt gatt) {
-            BluetoothGattCharacteristic characteristic;
-            switch (mState) {
-                /*case 2:
-                    Log.d(TAG, "Reading pressure cal");
-                    characteristic = gatt.getService(PRESSURE_SERVICE)
-                            .getCharacteristic(PRESSURE_CAL_CHAR);
-                    break;*/
-                case 0:
-                    Log.d(TAG, "Reading pressure");
-                    characteristic = gatt.getService(PRESSURE_SERVICE)
-                            .getCharacteristic(PRESSURE_DATA_CHAR);
-                    break;
-                case 1:
-                    Log.d(TAG, "Reading humidity");
-                    characteristic = gatt.getService(HUMIDITY_SERVICE)
-                            .getCharacteristic(HUMIDITY_DATA_CHAR);
-                    break;
-                case 2:
-                    Log.d(TAG, "Reading lux");
-                    characteristic = gatt.getService(LUX_SERVICE)
-                            .getCharacteristic(LUX_DATA_CHAR);
-                    break;
-                case 3:
-                    Log.d(TAG, "Reading mov");
-                    characteristic = gatt.getService(MOV_SERVICE)
-                            .getCharacteristic(MOV_DATA_CHAR);
-                    break;
-                default:
-                    mHandler.sendEmptyMessage(MSG_DISMISS);
-                    Log.i(TAG, "All Sensors Enabled");
-                    return;
-            }
-
-            gatt.readCharacteristic(characteristic);
-        }
-
-        /*
-         * Enable notification of changes on the data characteristic for each sensor
-         * by writing the ENABLE_NOTIFICATION_VALUE flag to that characteristic's
-         * configuration descriptor.
-         */
-        private void setNotifyNextSensor(BluetoothGatt gatt) {
-            BluetoothGattCharacteristic characteristic;
-            switch (mState) {
-                /*case 2:
-                    Log.d(TAG, "Set notify pressure cal");
-                    characteristic = gatt.getService(PRESSURE_SERVICE)
-                            .getCharacteristic(PRESSURE_CAL_CHAR);
-                    break;*/
-                case 0:
-                    Log.d(TAG, "Set notify pressure");
-                    characteristic = gatt.getService(PRESSURE_SERVICE)
-                            .getCharacteristic(PRESSURE_DATA_CHAR);
-                    break;
-                case 1:
-                    Log.d(TAG, "Set notify humidity");
-                    characteristic = gatt.getService(HUMIDITY_SERVICE)
-                            .getCharacteristic(HUMIDITY_DATA_CHAR);
-                    break;
-                case 2:
-                    Log.d(TAG, "Set notify lux");
-                    characteristic = gatt.getService(LUX_SERVICE)
-                            .getCharacteristic(LUX_DATA_CHAR);
-                    break;
-                case 3:
-                    Log.d(TAG, "Set notify mov");
-                    characteristic = gatt.getService(MOV_SERVICE)
-                            .getCharacteristic(MOV_DATA_CHAR);
-                    break;
-                default:
-                    mHandler.sendEmptyMessage(MSG_DISMISS);
-                    Log.i(TAG, "All Sensors Enabled");
-                    return;
-            }
-
-            //Enable local notifications
-            gatt.setCharacteristicNotification(characteristic, true);
-            //Enabled remote notifications
-            BluetoothGattDescriptor desc = characteristic.getDescriptor(CONFIG_DESCRIPTOR);
-            desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            gatt.writeDescriptor(desc);
-        }
-
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            Log.d(TAG, "Connection State Change: "+status+" -> "+connectionState(newState));
-            if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_CONNECTED) {
-                /*
-                 * Once successfully connected, we must next discover all the services on the
-                 * device before we can read and write their characteristics.
-                 */
-                gatt.discoverServices();
-                mHandler.sendMessage(Message.obtain(null, MSG_PROGRESS, "Discovering Services..."));
-            } else if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_DISCONNECTED) {
-                /*
-                 * If at any point we disconnect, send a message to clear the weather values
-                 * out of the UI
-                 */
-                mHandler.sendEmptyMessage(MSG_CLEAR);
-            } else if (status != BluetoothGatt.GATT_SUCCESS) {
-                /*
-                 * If there is a failure at any stage, simply disconnect
-                 */
-                gatt.disconnect();
-            }
-        }
-
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            Log.d(TAG, "Services Discovered: "+status);
-            mHandler.sendMessage(Message.obtain(null, MSG_PROGRESS, "Enabling Sensors..."));
-            /*
-             * With services discovered, we are going to reset our state machine and start
-             * working through the sensors we need to enable
-             */
-            reset();
-            enableNextSensor(gatt);
-        }
-
-        @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            //For each read, pass the data up to the UI thread to update the display
-            Log.d(TAG, "READUUIDDDDDDD: " +characteristic.getUuid());
-            if (MOV_DATA_CHAR.equals(characteristic.getUuid())){
-                mHandler.sendMessage(Message.obtain(null, MSG_MOV, characteristic));
-            }
-            if (LUX_DATA_CHAR.equals(characteristic.getUuid())){
-                mHandler.sendMessage(Message.obtain(null, MSG_LUX, characteristic));
-            }
-            if (HUMIDITY_DATA_CHAR.equals(characteristic.getUuid())) {
-                mHandler.sendMessage(Message.obtain(null, MSG_HUMIDITY, characteristic));
-            }
-            if (PRESSURE_DATA_CHAR.equals(characteristic.getUuid())) {
-                mHandler.sendMessage(Message.obtain(null, MSG_PRESSURE, characteristic));
-            }
-            if (PRESSURE_CAL_CHAR.equals(characteristic.getUuid())) {
-                mHandler.sendMessage(Message.obtain(null, MSG_PRESSURE_CAL, characteristic));
-            }
-
-            //After reading the initial value, next we enable notifications
-            setNotifyNextSensor(gatt);
-        }
-
-        @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            //After writing the enable flag, next we read the initial value
-            readNextSensor(gatt);
-        }
-
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            /*
-             * After notifications are enabled, all updates from the device on characteristic
-             * value changes will be posted here.  Similar to read, we hand these up to the
-             * UI thread to update the display.
-             */
-            Log.d(TAG, "CHANGEEEEUUIDDDDDDD: " +characteristic.getUuid());
-            if (MOV_DATA_CHAR.equals(characteristic.getUuid())) {
-                mHandler.sendMessage(Message.obtain(null, MSG_MOV, characteristic));
-            }
-            if (LUX_DATA_CHAR.equals(characteristic.getUuid())) {
-                mHandler.sendMessage(Message.obtain(null, MSG_LUX, characteristic));
-            }
-            if (HUMIDITY_DATA_CHAR.equals(characteristic.getUuid())) {
-                mHandler.sendMessage(Message.obtain(null, MSG_HUMIDITY, characteristic));
-            }
-            if (PRESSURE_DATA_CHAR.equals(characteristic.getUuid())) {
-                mHandler.sendMessage(Message.obtain(null, MSG_PRESSURE, characteristic));
-            }
-            if (PRESSURE_CAL_CHAR.equals(characteristic.getUuid())) {
-                mHandler.sendMessage(Message.obtain(null, MSG_PRESSURE_CAL, characteristic));
-            }
-        }
-
-        @Override
-        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            //Once notifications are enabled, we move to the next sensor and start over with enable
-            advance();
-            enableNextSensor(gatt);
-        }
-
-        @Override
-        public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-            Log.d(TAG, "Remote RSSI: "+rssi);
-        }
-
-        private String connectionState(int status) {
-            switch (status) {
-                case BluetoothProfile.STATE_CONNECTED:
-                    return "Connected";
-                case BluetoothProfile.STATE_DISCONNECTED:
-                    return "Disconnected";
-                case BluetoothProfile.STATE_CONNECTING:
-                    return "Connecting";
-                case BluetoothProfile.STATE_DISCONNECTING:
-                    return "Disconnecting";
-                default:
-                    return String.valueOf(status);
-            }
-        }
-    };
 
     /*
      * We have a Handler to process event results on the main thread
      */
-    private static final int MSG_LUX = 104;
-    private static final int MSG_MOV = 105;
-    private static final int MSG_HUMIDITY = 101;
-    private static final int MSG_PRESSURE = 102;
-    private static final int MSG_PRESSURE_CAL = 103;
-    private static final int MSG_PROGRESS = 201;
-    private static final int MSG_DISMISS = 202;
-    private static final int MSG_CLEAR = 301;
+
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             BluetoothGattCharacteristic characteristic;
             switch (msg.what) {
-                case MSG_MOV:
-                    characteristic = (BluetoothGattCharacteristic) msg.obj;
-                    if (characteristic.getValue() == null) {
-                        Log.w(TAG, "Error obtaining mov value");
-                        return;
-                    }
-                    updateMovValues(characteristic);
-                    break;
-                case MSG_LUX:
-                    characteristic = (BluetoothGattCharacteristic) msg.obj;
-                    if (characteristic.getValue() == null) {
-                        Log.w(TAG, "Error obtaining lux value");
-                        return;
-                    }
-                    updateLuxValues(characteristic);
-                    break;
-                case MSG_HUMIDITY:
-                    characteristic = (BluetoothGattCharacteristic) msg.obj;
-                    if (characteristic.getValue() == null) {
-                        Log.w(TAG, "Error obtaining humidity value");
-                        return;
-                    }
-                    updateHumidityValues(characteristic);
-                    break;
-                case MSG_PRESSURE:
-                    characteristic = (BluetoothGattCharacteristic) msg.obj;
-                    if (characteristic.getValue() == null) {
-                        Log.w(TAG, "Error obtaining pressure value");
-                        return;
-                    }
-                    updatePressureValue(characteristic);
-                    break;
-                case MSG_PRESSURE_CAL:
-                    characteristic = (BluetoothGattCharacteristic) msg.obj;
-                    if (characteristic.getValue() == null) {
-                        Log.w(TAG, "Error obtaining cal value");
-                        return;
-                    }
-                    updatePressureCals(characteristic);
-                    break;
                 case MSG_PROGRESS:
                     mProgress.setMessage((String) msg.obj);
                     if (!mProgress.isShowing()) {
@@ -641,124 +306,285 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
                     mProgress.hide();
                     break;
                 case MSG_CLEAR:
-                    clearDisplayValues();
                     break;
             }
         }
     };
 
-
     /* Methods to extract sensor data and update the UI */
-    public int whichmethod=1;
-    Point3D ov=null, ov2=null, ov3=null;
-    double st1=0,st2=0,st3=0;
-    double st1s=0,st2s=0,st3s=0;
-    double totalstable;
-
-    private void updateMovValues(BluetoothGattCharacteristic characteristic) {
-        //double humidity = SensorTagData.extractLux(characteristic);
-        //mMov.setText(String.format("%.2f", humidity));
-
-        byte[] value = characteristic.getValue();
-        Point3D v, v2,v3;
-
-        v = SensorTagData.extractMov_Acc(value);
-        mMov.setText(String.format("X:%.2fG, Y:%.2fG, Z:%.2fG", v.x,v.y,v.z));
-
-        v2 = SensorTagData.extractMov_Gyro(value);
-        mMov2.setText(String.format("X:%.2f'/s, Y:%.2f'/s, Z:%.2f'/s", v2.x,v2.y,v2.z));
-
-        //MAG - PRETTY MUCH USELESS. ABSOLUTE POSITIONING IN NSEW PLANE
-        v3 = SensorTagData.extractMov_Mag(value);
-        mMov3.setText(String.format("X:%.2fuT, Y:%.2fuT, Z:%.2fuT", v3.x,v3.y,v3.z));
 
 
-        double stablelevel = Math.abs(v2.x) + Math.abs(v2.y) +Math.abs(v2.z) ;
+    //BIND TO SERVICEE
 
-        if (st1 == 0) {st1s = stablelevel; st1 = 1; st2= 0;}
-        else if (st2 == 0) {st2s = stablelevel; st2 = 1; st3 =0;}
-        else if (st3 == 0) {st3s = stablelevel; st3 = 1; st1 =0;}
+    public void connect_device (View v) {
+        Intent serviceIntent = new Intent(this, BLEservice.class);
+        serviceIntent.putExtra("BLDevice", mDevices.valueAt(0) );
+        startService(serviceIntent);
+        doBindService();
+        DeviceSelection.setText("Bluetooth Device Connected");
+        DeviceDescription.setTextColor(Color.parseColor("#0000ff"));
+        DeviceSelection.setTextColor(Color.parseColor("#0000ff"));
 
-        totalstable = st1s+st2s+st3s;
-        mStability.setText(String.format("%.2f", totalstable));
 
-        mStability.setTextColor(Color.parseColor("#FF0000"));
-        if (totalstable<100) {mStability.setTextColor(Color.parseColor("#FFD700"));}
-        if (totalstable<50) {mStability.setTextColor(Color.parseColor("#00FF00"));}
-        if (totalstable<30) {mStability.setTextColor(Color.parseColor("#0000FF"));}
 
-         ov=v;
-        ov2=v2;
-        ov3=v3;
-        if (whichmethod == 1)
-            checkstabilityofmethod(v,ov);
-        if (whichmethod == 2)
-            checkstabilityofmethod(v2,ov2);
-        if (whichmethod == 3)
-            checkstabilityofmethod(v3,ov3);
+        LinearLayout devices_drop = (LinearLayout) findViewById(R.id.device_select_drop);
+        devices_drop.setBackgroundColor(Color.parseColor("#65b2da"));
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setBackgroundColor(Color.parseColor("#65b2da"));
+
+
+
+        startTestThread();
+
 
 
 
     }
 
-    public void checkstabilityofmethod(Point3D v2, Point3D ov2) {
-        if (ov2 != null) {
-            if (ov2.x != 0)
-                mPer.setText(String.format("%.2f", checkstability(v2.x, ov2.x)));
-            else
-                mPer.setText("X");
-            if (ov2.y != 0)
-                mPer2.setText(String.format("%.2f", checkstability(v2.y, ov2.y)));
-            else
-                mPer2.setText("X");
-            if (ov2.z != 0)
-                mPer3.setText(String.format("%.2f", checkstability(v2.z, ov2.z)));
-            else
-                mPer3.setText("X");
+
+
+
+    /*DRAW THE IMAGEVIEW TO DISPLAY STABILITY INDEX*/
+
+    private int mode =0;
+    int[] historyarray;
+
+    public void onDraw(double totalstable){
+
+        Typeface custom_font_roboto = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Regular.ttf");
+        Typeface custom_font = Typeface.createFromAsset(getAssets(), "fonts/blair_itc_bold1.ttf");
+        Typeface custom_font_bold = Typeface.createFromAsset(getAssets(), "fonts/blair_itc_bold1.ttf");
+
+        int width = getWindowManager().getDefaultDisplay().getWidth();
+        int height = getWindowManager().getDefaultDisplay().getHeight();
+
+        int text_size=130;
+
+        final ImageView imgCircle= (ImageView) findViewById(R.id.imgCircle);
+
+        Paint paint = new Paint();
+
+        if (totalstable>=100) {paint.setColor(Color.parseColor("#FF0000")); }
+        if (totalstable<100) {paint.setColor(Color.parseColor("#FFD700"));}
+        if (totalstable<50) {paint.setColor(Color.parseColor("#00FF00"));}
+        if (totalstable<30) {paint.setColor(Color.parseColor("#0000FF"));}
+
+        paint.setStyle(Paint.Style.STROKE);
+
+        Bitmap bmp = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(bmp);
+        Paint paint2 = new Paint();
+
+
+
+        if (mode == 0) {
+            historyarray = new int[100];
+            paint2.setTypeface(custom_font_bold);
+            paint2.setTextSize(text_size);
+            paint2.setTextAlign(Paint.Align.CENTER);
+
+            paint2.setColor(Color.parseColor("#FF0000"));
+            if (totalstable < 100) {
+                paint2.setColor(Color.parseColor("#FFD700"));
+            }
+            if (totalstable < 50) {
+                paint2.setColor(Color.parseColor("#00FF00"));
+            }
+            if (totalstable < 30) {
+                paint2.setColor(Color.parseColor("#0000FF"));
+            }
+
+            canvas.drawText(String.format("%.0f", totalstable), bmp.getWidth() / 2, 5 * (bmp.getHeight() / 8) + (text_size / 4) - 30, paint2);
+
+            paint2.setTypeface(custom_font);
+            paint2.setTextSize(2 * text_size / 4);
+
+            paint2.setColor(Color.parseColor("#65b2da"));
+            canvas.drawText("Stability Index", bmp.getWidth() / 2, 5 * (bmp.getHeight() / 8) + (text_size) - 20, paint2);
+
+            int radius;
+            int circle_width = 30;
+            radius = (bmp.getHeight() < bmp.getWidth()) ? bmp.getHeight() / 3 : bmp.getWidth() / 3;
+            int i = 0;
+            paint.setFlags(Paint.ANTI_ALIAS_FLAG);
+            for (i = 0; i < circle_width; i++)
+                canvas.drawCircle(bmp.getWidth() / 2, 5 * (bmp.getHeight() / 8), radius + i, paint);
+
+            imgCircle.setImageBitmap(bmp);
+
         }
+        else if (mode == 1) {
+
+
+            paint2.setColor(Color.parseColor("#FF0000"));
+            if (totalstable < 100) {
+                paint2.setColor(Color.parseColor("#FFD700"));
+            }
+            if (totalstable < 50) {
+                paint2.setColor(Color.parseColor("#00FF00"));
+            }
+            if (totalstable < 30) {
+                paint2.setColor(Color.parseColor("#0000FF"));
+            }
+
+            int radius;
+            int circle_width = 1;
+            radius = 1;
+            int i = 0;
+            int j =0;
+
+
+                historyarray[bind_complete%100] = (int) totalstable;
+
+            paint.setFlags(Paint.ANTI_ALIAS_FLAG);
+            for (j=0;j<100;j++) {
+                for (i = 0; i < circle_width; i++) {
+                    canvas.drawCircle(j * (bmp.getWidth() / 100), (float) ( ((0.8)*bmp.getHeight() - historyarray[j] * (bmp.getHeight() / 1000))), radius + i, paint);
+                    int k = j - 1;
+                    if (k >= 0)
+                        canvas.drawLine(k * (bmp.getWidth() / 100), (float) (i+((0.8)*bmp.getHeight() -  historyarray[k] * (bmp.getHeight() / 1000))), j * (bmp.getWidth() / 100), (float) (i+ ((0.8)*bmp.getHeight() - historyarray[j] * (bmp.getHeight() / 1000))), paint);
+
+                }
+            }
+            imgCircle.setImageBitmap(bmp);
+        }
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        TextView toolbarTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
+
+        //TextView devices_title = (TextView) findViewById(R.id.devices_title);
+        TextView one_tab       = (TextView) findViewById(R.id.si_tab);
+        TextView two_tab       = (TextView) findViewById(R.id.history_tab);
+        TextView three_tab     = (TextView) findViewById(R.id.play_tab);
+
+       //devices_title.setTypeface(custom_font_bold);
+        toolbarTitle.setTypeface(custom_font_roboto);
+        one_tab.setTypeface(custom_font);
+        two_tab.setTypeface(custom_font);
+        three_tab.setTypeface(custom_font);
+
+        DeviceSelection.setTypeface(custom_font_bold);
     }
-    public double checkstability(double newval, double oldval) {
-        double percent;
-            percent = ((newval / oldval)/(oldval)) * 100;
-        return percent;
+
+    public void stability_tab_press(View v) {
+        TextView one_tab = (TextView) findViewById(R.id.si_tab);
+        TextView two_tab = (TextView) findViewById(R.id.history_tab);
+        TextView three_tab = (TextView) findViewById(R.id.play_tab);
+
+        one_tab.setBackgroundResource(R.drawable.gradient_bg);
+        two_tab.setBackgroundResource(0);
+        three_tab.setBackgroundResource(0);
+
+
+        mode = 0;
+
+
+
     }
-    public void do1(View v) {
-        whichmethod=1;
+    public void history_tab_press(View v) {
+        TextView one_tab = (TextView) findViewById(R.id.si_tab);
+        TextView two_tab = (TextView) findViewById(R.id.history_tab);
+        TextView three_tab = (TextView) findViewById(R.id.play_tab);
+
+        one_tab.setBackgroundResource(0);
+        two_tab.setBackgroundResource(R.drawable.gradient_bg);
+        three_tab.setBackgroundResource(0);
+
+        mode = 1;
+
+
     }
-    public void do2(View v) {
-        whichmethod=2;
-    }
-    public void do3(View v) {
-        whichmethod=3;
-    }
+    public void play_tab_press(View v) {
+        TextView one_tab = (TextView) findViewById(R.id.si_tab);
+        TextView two_tab = (TextView) findViewById(R.id.history_tab);
+        TextView three_tab = (TextView) findViewById(R.id.play_tab);
 
+        one_tab.setBackgroundResource(0);
+        two_tab.setBackgroundResource(0);
+        three_tab.setBackgroundResource(R.drawable.gradient_bg);
 
-
-
-
-
-    // END OF MOVEMENT EXTRACTION
-    private void updateLuxValues(BluetoothGattCharacteristic characteristic) {
-        double humidity = SensorTagData.extractLux(characteristic);
-        mLux.setText(String.format("%.2f", humidity));
-    }
-    private void updateHumidityValues(BluetoothGattCharacteristic characteristic) {
-        double humidity = SensorTagData.extractHumidity(characteristic);
-
-        mHumidity.setText(String.format("%.02f%%", humidity));
-    }
-
-    private int[] mPressureCals;
-    private void updatePressureCals(BluetoothGattCharacteristic characteristic) {
-        mPressureCals = SensorTagData.extractCalibrationCoefficients(characteristic);
+        Intent intent = new Intent(this, PlayActivity.class);
+        startActivity(intent);
     }
 
-    private void updatePressureValue(BluetoothGattCharacteristic characteristic) {
-        if (mPressureCals == null) return;
-        double pressure = SensorTagData.extractBarometer(characteristic, mPressureCals);
-        double temp = SensorTagData.extractBarTemperature(characteristic, mPressureCals);
 
-        mTemperature.setText(String.format("%.1f\u00B0C", temp));
-        mPressure.setText(String.format("%.2f", pressure));
+
+    /******************************************************************************/
+    /******************************************************************************/
+    /******************************************************************************/
+    /******************************CONNECT TO THE BLE SERVICE**********************/
+    /******************************************************************************/
+    /******************************************************************************/
+    /******************************************************************************/
+
+    private BLEservice myServiceBinder;
+    public ServiceConnection myConnection = new ServiceConnection() {
+
+        public void onServiceConnected(ComponentName className, IBinder binder) {
+            myServiceBinder = ((BLEservice.MyBinder) binder).getService();
+            Log.d("ServiceConnection","connected");
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            Log.d("ServiceConnection","disconnected");
+
+        }
+    };
+
+    public Handler myHandler = new Handler() {
+        public void handleMessage(Message message) {
+            Bundle data = message.getData();
+        }
+    };
+
+    public void doBindService() {
+        Intent intent = null;
+        intent = new Intent(this, BLEservice.class);
+        // Create a new Messenger for the communication back
+        // From the Service to the Activity
+        Messenger messenger = new Messenger(myHandler);
+        intent.putExtra("MESSENGER", messenger);
+
+        bindService(intent, myConnection, Context.BIND_AUTO_CREATE);
+        Toast.makeText(this, "Bind Complete!", Toast.LENGTH_SHORT).show();
+
+
     }
+
+    /******************************************************************************/
+    /******************************************************************************/
+    /******************************************************************************/
+    /***************************END OF CONNECTING BLE SERVICE**********************/
+    /******************************************************************************/
+    /******************************************************************************/
+    /******************************************************************************/
+
+
+    private int bind_complete =0;
+
+    private Runnable updatedraw = new Runnable() {
+        @Override
+        public void run() {
+
+            //ADD A DELAYY
+            if (bind_complete > 5) {
+            onDraw(myServiceBinder.get_sindex());
+                findViewById(R.id.device_select_drop).setVisibility(View.GONE);
+            }
+            bind_complete++;
+            mHandler.postDelayed(this, 200);
+        }
+    };
+
+    protected void startTestThread() {
+        Thread t = new Thread() {
+            public void run() {
+                mHandler.post(updatedraw);
+            }
+        };
+        t.start();
+    }
+
 }

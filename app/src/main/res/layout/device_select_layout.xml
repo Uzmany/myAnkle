@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#49a4c2">
+
+    <TextView
+
+        android:id="@+id/devices_title"
+        android:paddingTop="15sp"
+        android:paddingBottom="15sp"
+        android:paddingLeft="10sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select a device from the list below. Click to connect."
+        android:textSize="15dp"/>
+
+    <TextView
+        android:paddingLeft="10sp"
+        android:paddingTop="15sp"
+        android:paddingBottom="15sp"
+        android:layout_marginLeft="0sp"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:id="@+id/devices"
+        android:textSize="12sp"
+        android:text="No Devices Detected. Press Scan!"
+        android:clickable="true"
+        android:onClick="connect_device"
+        />
+    <TextView
+        android:layout_marginLeft="10sp"
+        android:paddingBottom="5sp"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:id="@+id/devices_detail"
+        android:fontFamily="sans-serif-light"
+        android:gravity="center_horizontal"
+        android:textSize="10sp"
+        android:text="-"
+        android:clickable="true"
+        android:onClick="connect_device"
+        />
+
+
+
+
+
+
+</LinearLayout>

@@ -7,7 +7,12 @@
     android:fitsSystemWindows="true"
     tools:context="uzmany.bmonitor.MainActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
     <android.support.design.widget.AppBarLayout
+        android:id="@+id/topmostbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
@@ -16,165 +21,60 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            android:background="#65b2da"
+            app:popupTheme="@style/AppTheme.PopupOverlay" >
+
+            <TextView
+
+                android:gravity="center_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/toolbar_title" />
+
+
+        </android.support.v7.widget.Toolbar>
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_main" />
+        <include
+            android:id="@+id/device_select_drop"
+            layout="@layout/device_select_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/ic_dialog_email" />
-    <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            />
+
+
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2sp"
+
+                android:background="@drawable/gradient_bg"
+                />
+
+    <ImageView
+        android:layout_weight="0.4"
+        android:id="@+id/imgCircle"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingBottom="@dimen/activity_vertical_margin"
-        android:stretchColumns="*">
-        <TextView
-            android:paddingTop="100dp"
+        android:layout_height="0dp"
+        android:contentDescription="@string/description"/>
 
-            android:gravity="center_horizontal"
-            android:textSize="30dp"
-            android:text="LOL LMAO WTF?"/>
-        <TableRow>
-            <TextView
-                android:id="@+id/text_temperature"
-                android:layout_column="0"
-                android:textSize="@dimen/measurement_text_size"
-                android:gravity="center_horizontal"/>
-            <TextView
-                android:layout_column="2"
-                android:id="@+id/text_pressure"
-                android:textSize="@dimen/measurement_text_size"
-                android:gravity="center_horizontal"/>
-        </TableRow>
-        <TableRow>
-            <TextView
-                android:layout_column="0"
-                android:textSize="@dimen/label_text_size"
-                android:gravity="center_horizontal"
-                android:text="Ambient Temperature"/>
-            <TextView
-                android:layout_column="2"
-                android:textSize="@dimen/label_text_size"
-                android:gravity="center_horizontal"
-                android:text="Barometric Pressure"/>
-        </TableRow>
-        <TableRow>
-            <TextView
-                android:id="@+id/text_humidity"
-                android:layout_column="0"
-                android:textSize="@dimen/measurement_text_size"
-                android:gravity="center_horizontal"/>
-            <TextView
-                android:id="@+id/text_lux"
-                android:layout_column="2"
-                android:textSize="@dimen/measurement_text_size"
-                android:gravity="center_horizontal"/>
-        </TableRow>
-        <TableRow>
-            <TextView
-                android:layout_column="0"
-                android:textSize="@dimen/label_text_size"
-                android:gravity="center_horizontal"
-                android:text="Humidity"/>
-            <TextView
-                android:layout_column="2"
-                android:textSize="@dimen/label_text_size"
-                android:gravity="center_horizontal"
-                android:text="Lux"/>
-        </TableRow>
-        <TableRow>
-            <TextView
-                android:id="@+id/text_mov"
-                android:layout_column="0"
-                android:textSize="@dimen/measurement_text_size"
-                android:gravity="center_horizontal"/>
-            <TextView
-                android:id="@+id/text_per"
-                android:layout_column="2"
-                android:textSize="@dimen/measurement_text_size"
-                android:gravity="center_horizontal"/>
-        </TableRow>
-        <TableRow>
-            <TextView
-                android:id="@+id/text_mov2"
-                android:layout_column="0"
-                android:textSize="@dimen/measurement_text_size"
-                android:gravity="center_horizontal"/>
-            <TextView
-                android:id="@+id/text_per2"
-                android:layout_column="2"
-                android:textSize="@dimen/measurement_text_size"
-                android:gravity="center_horizontal"/>
-        </TableRow>
-        <TableRow>
-            <TextView
-                android:id="@+id/text_mov3"
-                android:layout_column="0"
-                android:textSize="@dimen/measurement_text_size"
-                android:gravity="center_horizontal"/>
-            <TextView
-                android:id="@+id/text_per3"
-                android:layout_column="2"
-                android:textSize="@dimen/measurement_text_size"
-                android:gravity="center_horizontal"/>
-        </TableRow>
-        <TableRow>
-            <TextView
-                android:layout_column="0"
-                android:textSize="@dimen/label_text_size"
-                android:gravity="center_horizontal"
-                android:text="Movement"/>
-        </TableRow>
-        <TableRow>
-            <Button
-                android:layout_column="0"
-                android:id="@+id/button1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="do1"
-                android:text="1" />
 
-            <Button
-                android:layout_column="1"
-                android:id="@+id/button2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="do2"
-                android:text="2" />
-            <Button
-                android:layout_column="2"
-                android:id="@+id/button3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="do3"
-                android:text="3" />
-        </TableRow>
-        <TableRow>
-            <TextView
-                android:text="STABILITY INDEX"
-                android:layout_column="0"
-                android:textSize="20dp"
-                android:gravity="center_horizontal"
-                />
-            <TextView
-                android:id="@+id/text_stabilitylevel"
-                android:layout_column="1"
-                android:textSize="20dp"
-                android:gravity="center_horizontal"
-                />
-        </TableRow>
-    </TableLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="4sp"
 
+            android:background="@drawable/gradient_bg_opp"
+            />
+
+        <include
+            layout="@layout/drawer_layout"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_weight="0.033"/>
+
+</LinearLayout>
 
 
 </android.support.design.widget.CoordinatorLayout>

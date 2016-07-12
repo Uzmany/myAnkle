@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:orientation="horizontal"
+        android:layout_weight="0.033"
+        >
+
+        <TextView
+            android:id="@+id/si_tab"
+            android:layout_weight="0.3"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Stability"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:clickable="true"
+            android:onClick="stability_tab_press"
+
+            />
+        <TextView
+            android:id="@+id/history_tab"
+            android:layout_weight="0.3"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="History"
+            android:gravity="center"
+            android:clickable="true"
+            android:onClick="history_tab_press"
+            android:textSize="13sp"/>
+
+        <TextView
+            android:id="@+id/play_tab"
+            android:layout_weight="0.3"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Play"
+            android:gravity="center"
+            android:clickable="true"
+            android:onClick="play_tab_press"
+            android:textSize="13sp"/>
+
+
+
+    </LinearLayout>
+
+
+</LinearLayout>

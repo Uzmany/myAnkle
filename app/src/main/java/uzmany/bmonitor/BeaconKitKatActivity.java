@@ -11,7 +11,8 @@ import android.app.Activity;
         import android.content.Context;
         import android.content.Intent;
         import android.content.pm.PackageManager;
-        import android.graphics.Color;
+import android.graphics.Canvas;
+import android.graphics.Color;
         import android.os.Bundle;
         import android.os.Handler;
         import android.os.Message;
@@ -66,6 +67,8 @@ public class BeaconKitKatActivity extends Activity implements BluetoothAdapter.L
         mBluetoothAdapter = manager.getAdapter();
 
         mBeacons = new HashMap<String, TemperatureBeacon>();
+
+
     }
 
     @Override
