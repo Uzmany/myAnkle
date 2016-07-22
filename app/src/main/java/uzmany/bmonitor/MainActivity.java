@@ -107,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
         setSupportActionBar(toolbar);
 
         Typeface custom_font_roboto = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Regular.ttf");
-
         Typeface custom_font = Typeface.createFromAsset(getAssets(), "fonts/blair_itc_bold1.ttf");
         Typeface custom_font_bold = Typeface.createFromAsset(getAssets(), "fonts/blair_itc_bold1.ttf");
 
@@ -118,13 +117,16 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
         toolbarTitle.setTextColor(Color.parseColor("#ffffff"));
 
         toolbar.setBackgroundColor(Color.parseColor("#d15851"));
+
         LinearLayout devices_drop = (LinearLayout) findViewById(R.id.device_select_drop);
+        devices_drop.setVisibility(View.GONE);
         devices_drop.setBackgroundColor(Color.parseColor("#d15851"));
         /*
          * We are going to display the results in some text fields
          */
 
         DeviceSelection = (TextView) findViewById(R.id.devices);
+        DeviceSelection.setText("");
         DeviceDescription = (TextView) findViewById(R.id.devices_detail);
 
         BluetoothManager manager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
@@ -231,8 +233,8 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
                     findViewById(R.id.device_select_drop).setVisibility(View.VISIBLE);
                     show_device_drop=true;
                 }
-                mDevices.clear();
-                startScan();
+                //mDevices.clear();
+                //startScan();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -509,6 +511,11 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
         startActivity(intent);
     }
 
+    public void refresh_devices_Click(View v) {
+        mDevices.clear();
+        startScan();
+    }
+
 
 
     /******************************************************************************/
@@ -571,10 +578,10 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
             //ADD A DELAYY
             if (bind_complete > 5) {
             onDraw(myServiceBinder.get_sindex());
-                findViewById(R.id.device_select_drop).setVisibility(View.GONE);
+                //findViewById(R.id.device_select_drop).setVisibility(View.GONE);
             }
             bind_complete++;
-            mHandler.postDelayed(this, 200);
+            mHandler.postDelayed(this, 100);
         }
     };
 

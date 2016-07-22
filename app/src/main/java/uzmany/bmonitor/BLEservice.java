@@ -38,6 +38,7 @@ public class BLEservice extends Service {
     private static final UUID MOV_SERVICE =     UUID.fromString("f000aa80-0451-4000-b000-000000000000");
     private static final UUID MOV_DATA_CHAR =   UUID.fromString("f000aa81-0451-4000-b000-000000000000");
     private static final UUID MOV_CONFIG_CHAR = UUID.fromString("f000aa82-0451-4000-b000-000000000000");
+    private static final UUID MOV_CONFIG_PERIOD= UUID.fromString("f000aa83-0451-4000-b000-000000000000");
 
 
     private static final int MSG_MOV = 105;
@@ -131,13 +132,17 @@ public class BLEservice extends Service {
          * low by disabling sensors you aren't using.
          */
         private void enableNextSensor(BluetoothGatt gatt) {
-            BluetoothGattCharacteristic characteristic;
+            BluetoothGattCharacteristic characteristic, characteristic2;
             switch (mState) {
                 case 0:
                     Log.d(TAG, "Enabling mov");
                     characteristic = gatt.getService(MOV_SERVICE)
                             .getCharacteristic(MOV_CONFIG_CHAR);
                     characteristic.setValue(new byte[] {0x7f, 0x00});
+
+                    characteristic2 = gatt.getService(MOV_SERVICE)
+                            .getCharacteristic(MOV_CONFIG_PERIOD);
+                    //characteristic2.setValue(new byte[] {0x64});
                     //characteristic.setValue(new byte[] {0x00, 0x7f});
                     break;
                 default:
