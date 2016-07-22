@@ -578,7 +578,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
             //ADD A DELAYY
             if (bind_complete > 5) {
             onDraw(myServiceBinder.get_sindex());
-                //findViewById(R.id.device_select_drop).setVisibility(View.GONE);
+                findViewById(R.id.device_select_drop).setVisibility(View.GONE);
             }
             bind_complete++;
             mHandler.postDelayed(this, 100);
