@@ -5,10 +5,26 @@
     android:layout_height="match_parent"
     tools:context="uzmany.bmonitor.PlayActivity">
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
     <TextView
+        android:layout_weight="0.1"
         android:id="@+id/test_text"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:text="LETS PLAY GAMES!"
         android:background="#7789"/>
+
+    <ImageView
+        android:layout_weight="1"
+        android:id="@+id/GameArea"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:contentDescription="@string/description"/>
+
+    </LinearLayout>
+
 </RelativeLayout>

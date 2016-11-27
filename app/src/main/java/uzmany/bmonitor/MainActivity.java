@@ -52,6 +52,7 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements BluetoothAdapter.LeScanCallback {
@@ -106,10 +107,14 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        Typeface custom_font_roboto = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Regular.ttf");
-        Typeface custom_font = Typeface.createFromAsset(getAssets(), "fonts/blair_itc_bold1.ttf");
-        Typeface custom_font_bold = Typeface.createFromAsset(getAssets(), "fonts/blair_itc_bold1.ttf");
+       // Typeface custom_font_roboto = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Regular.ttf");
+       // Typeface custom_font = Typeface.createFromAsset(getAssets(), "fonts/blair_itc_bold1.ttf");
+       // Typeface custom_font_bold = Typeface.createFromAsset(getAssets(), "fonts/blair_itc_bold1.ttf");
 
+
+        Typeface custom_font_bold = Typeface.DEFAULT_BOLD;
+        Typeface custom_font = Typeface.DEFAULT;
+        Typeface custom_font_roboto = Typeface.MONOSPACE;
 
         TextView toolbarTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
         toolbarTitle.setText("My Ankle");
@@ -143,7 +148,10 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
         mProgress.setCancelable(false);
 
 
+        //avgArray = new int[100];
+        movAverages = new ArrayList<Double> ();
         onDraw(0);
+
     }
 
     @Override
@@ -352,11 +360,39 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
     private int mode =0;
     int[] historyarray;
 
+    int logc =0;
+
+    ArrayList<Double> movAverages;
+
     public void onDraw(double totalstable){
 
-        Typeface custom_font_roboto = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Regular.ttf");
-        Typeface custom_font = Typeface.createFromAsset(getAssets(), "fonts/blair_itc_bold1.ttf");
-        Typeface custom_font_bold = Typeface.createFromAsset(getAssets(), "fonts/blair_itc_bold1.ttf");
+        double newTenAverage = 0;
+        if (movAverages.size() < 100) {
+            movAverages.add(totalstable);
+        }
+        else {
+            movAverages.remove(0);
+            movAverages.add(totalstable);
+            for (Double dbA: movAverages) {
+                newTenAverage += dbA;
+            }
+            newTenAverage = newTenAverage/100;
+        }
+
+
+
+
+        logc++;
+        if(logc % 100 == 0)  Log.d("Logging StabilityIndex",String.format("%.0f", totalstable));
+        //if(logc % 100 == 0)  Log.d("Logging StabilityIndex",String.valueOf( myServiceBinder.isNotificationEnabled( ) ));
+
+        //Typeface custom_font_roboto = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Regular.ttf");
+        //Typeface custom_font = Typeface.createFromAsset(getAssets(), "fonts/blair_itc_bold1.ttf");
+        //Typeface custom_font_bold = Typeface.createFromAsset(getAssets(), "fonts/blair_itc_bold1.ttf");
+
+        Typeface custom_font_bold = Typeface.DEFAULT_BOLD;
+        Typeface custom_font = Typeface.DEFAULT;
+        Typeface custom_font_roboto = Typeface.MONOSPACE;
 
         int width = getWindowManager().getDefaultDisplay().getWidth();
         int height = getWindowManager().getDefaultDisplay().getHeight();
@@ -404,7 +440,10 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
             paint2.setTextSize(2 * text_size / 4);
 
             paint2.setColor(Color.parseColor("#65b2da"));
-            canvas.drawText("Stability Index", bmp.getWidth() / 2, 5 * (bmp.getHeight() / 8) + (text_size) - 20, paint2);
+
+
+            canvas.drawText(  String.format( "10 SMA: %.0f ", newTenAverage ),    bmp.getWidth() / 2, 5 * (bmp.getHeight() / 8) + (text_size) - 20, paint2  );
+            //canvas.drawText("Stability Index", bmp.getWidth() / 2, 5 * (bmp.getHeight() / 8) + (text_size) - 20, paint2);
 
             int radius;
             int circle_width = 30;
@@ -419,18 +458,6 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
         }
         else if (mode == 1) {
 
-
-            paint2.setColor(Color.parseColor("#FF0000"));
-            if (totalstable < 100) {
-                paint2.setColor(Color.parseColor("#FFD700"));
-            }
-            if (totalstable < 50) {
-                paint2.setColor(Color.parseColor("#00FF00"));
-            }
-            if (totalstable < 30) {
-                paint2.setColor(Color.parseColor("#0000FF"));
-            }
-
             int radius;
             int circle_width = 1;
             radius = 1;
@@ -438,11 +465,24 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
             int j =0;
 
 
-                historyarray[bind_complete%100] = (int) totalstable;
+            historyarray[bind_complete%100] = (int) totalstable;
+
+
+            int[] colors ={ Color.parseColor("#FF0000"),  Color.parseColor("#0000FF"),  Color.parseColor("#00FF00"), Color.parseColor("#FFD700")  };
+
 
             paint.setFlags(Paint.ANTI_ALIAS_FLAG);
+            paint.setStrokeWidth(10);
             for (j=0;j<100;j++) {
                 for (i = 0; i < circle_width; i++) {
+
+                    int color_index=0;
+                    if (historyarray[j] <90)
+                    {color_index = historyarray[j]/30;
+                        paint.setColor(colors[color_index+1]);}
+                    else paint.setColor(colors[color_index]);
+
+
                     canvas.drawCircle(j * (bmp.getWidth() / 100), (float) ( ((0.8)*bmp.getHeight() - historyarray[j] * (bmp.getHeight() / 1000))), radius + i, paint);
                     int k = j - 1;
                     if (k >= 0)
@@ -468,6 +508,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
         three_tab.setTypeface(custom_font);
 
         DeviceSelection.setTypeface(custom_font_bold);
+
     }
 
     public void stability_tab_press(View v) {
@@ -578,7 +619,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothAdapter.
             //ADD A DELAYY
             if (bind_complete > 5) {
             onDraw(myServiceBinder.get_sindex());
-                findViewById(R.id.device_select_drop).setVisibility(View.GONE);
+                //findViewById(R.id.device_select_drop).setVisibility(View.GONE);
             }
             bind_complete++;
             mHandler.postDelayed(this, 100);
