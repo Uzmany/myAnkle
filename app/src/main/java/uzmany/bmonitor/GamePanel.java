@@ -1,6 +1,7 @@
 package uzmany.bmonitor;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -68,10 +69,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
         centreWidth = 350;
         gameState = gS_INTRO;
 
-        startBox.startX   = getWidth() / 2 - 175;
-        startBox.startY   = getHeight() - 300;
-        startBox.endX     = getWidth() / 2; // Check this
-        startBox.endY     = getHeight();
     }
 
 
@@ -124,13 +121,18 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 
     }
     public class gameClickBox {
-        int startX;
-        int endX;
-        int startY;
-        int endY;
+        float startX;
+        float endX;
+        float startY;
+        float endY;
     }
 
     public boolean checkwithinBox( gameClickBox thisBox, float xPos, float yPos ) {
+
+        xPos  = xPos / scaleFactorXU;
+        yPos  = yPos / scaleFactorYU;
+
+        Log.d("gs_INTRO_checkBox", "Outside Box X:" + Float.toString(thisBox.startX) + " Y:" + Float.toString(thisBox.startY) );
 
         if ( xPos <= thisBox.endX && xPos >= thisBox.startX  && yPos <= thisBox.endY && yPos >= thisBox.startY )
             return true;
@@ -149,11 +151,29 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 
             switch ( gameState) {
                 case gS_INTRO:
+                        /*
                         if ( checkwithinBox( startBox, xTouch, yTouch ) ) {
                             gameState = gS_PLAYING;
                             Log.d("gs_INTRO", "Inside Box");
                         }
-                        else Log.d("gs_INTRO", "Outside Box");
+                        else Log.d("gs_INTRO", "Outside Box X:" + Float.toString(xTouch) + " Y:" + Float.toString(yTouch) );
+                        */
+                        if ( checkwithinBox(startBox, xTouch, yTouch) ) {
+                            gameState = gS_PLAYING;
+                        }
+                        else if ( checkwithinBox( eyesBox, xTouch, yTouch ) ) {
+                            gameEyes++;
+                            gameEyes = gameEyes % 2;
+                        }
+                        else if ( checkwithinBox(testBox, xTouch, yTouch) ) {
+                            gameTest++;
+                            gameTest = gameTest % 2;
+                        }
+                        else if ( checkwithinBox(levelBox, xTouch, yTouch) ) {
+                            gameLevel++;
+                            gameLevel = gameLevel % 3;
+                        }
+
                     return true;
                 case gS_PLAYING:
                     if (!player.startCalibrating) {
@@ -266,11 +286,28 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
     private static final int  gS_INTRO = 000;
     private static final int  gS_PLAYING = 111;
     private static final int  gS_END = 222;
+
+    private static final int  EYES_ON = 0;
+    private static final int  EYES_OFF = 1;
+
+    private static final int TEST_ON = 0;
+    private static final int TEST_OFF = 1;
+
+    private static final int LEVEL_ONE = 0;
+    private static final int LEVEL_TWO = 1;
+    private static final int LEVEL_THREE = 2;
+
+    public int gameEyes, gameTest, gameLevel;
+
     public gameClickBox startBox, eyesBox, levelBox, testBox;
+
+    public float scaleFactorXU, scaleFactorYU;
 
     public void draw (Canvas canvas) {
         final float scaleFactorX = (float) getWidth() /   canvas.getWidth(); // (WIDTH * 1.f);
         final float scaleFactorY = (float) getHeight() / canvas.getHeight();//(HEIGHT * 1.f);
+        scaleFactorXU= scaleFactorX;
+        scaleFactorYU= scaleFactorY;
         Log.d("Width and Height" , "H: " + getHeight() + " W: " + getWidth() + "cH" + canvas.getHeight() + "cW" + canvas.getWidth());
 
         if (canvas != null) {
@@ -283,7 +320,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
 
             Paint paint = new Paint();
 
-            gameState = gS_INTRO;
+            //gameState = gS_INTRO;
             switch (gameState) {
                 case gS_INTRO:
 
@@ -293,13 +330,50 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback
                     paint.setTextSize(100);
                     paint.setStrokeWidth(3);
 
+
+                    paint.setColor(Color.RED);
+                    canvas.drawRect( getWidth() / 2 - 250, getHeight() - 450, getWidth() / 2 +250, getHeight() - 250,paint); // START BOX
+                    canvas.drawRect( getWidth() / 2 + 250  , 400, getWidth() / 2 +550, 600 ,paint); // EYES BOX
+                    canvas.drawRect( getWidth() / 2 + 250  , 700, getWidth() / 2 +550, 900,paint); // LEVEL BOX
+                    canvas.drawRect( getWidth() / 2 + 250  , 1000 , getWidth() / 2 +550, 1200,paint); // TEST BOX
+
+                    paint.setColor(Color.WHITE);
                     canvas.drawText("MENU", getWidth() / 2 - 150, 300 , paint);
 
                     canvas.drawText("EYES", getWidth() / 2 - 450, 500 , paint);
-                    canvas.drawText("LEVEL", getWidth() / 2 - 450, 800 , paint);
-                    canvas.drawText("TEST", getWidth() / 2 - 450, 1100 , paint);
+                    Log.d("game_", Integer.toString( gameEyes ));
 
+                    canvas.drawText("LEVEL", getWidth() / 2 - 450, 800 , paint);
+                    Log.d("game_", Integer.toString( gameLevel ));
+                    canvas.drawText(Integer.toString(gameLevel) , getWidth() / 2 + 350, 800 , paint);
+
+
+                    canvas.drawText("TEST", getWidth() / 2 - 450, 1100 , paint);
+                    Log.d("game_", Integer.toString( gameTest ));
                     canvas.drawText("START", getWidth() / 2 - 175, getHeight() - 300 , paint);
+
+
+                    startBox = new gameClickBox();
+                    startBox.startX   = getWidth() / 2 - 250;
+                    startBox.startY   = getHeight() - 450;
+                    startBox.endX     = getWidth() / 2 +250; // Check this
+                    startBox.endY     = getHeight() - 250;
+                    eyesBox = new gameClickBox();
+                    eyesBox.startX   = getWidth() / 2 + 250;
+                    eyesBox.startY   = 400;
+                    eyesBox.endX     = getWidth() / 2 +550; // Check this
+                    eyesBox.endY     = 600;
+                    levelBox = new gameClickBox();
+                    levelBox.startX   = getWidth() / 2 + 250;
+                    levelBox.startY   = 700;
+                    levelBox.endX     = getWidth() / 2 +550; // Check this
+                    levelBox.endY     = 900;
+                    testBox = new gameClickBox();
+                    testBox.startX   = getWidth() / 2 + 250;
+                    testBox.startY   = 1000;
+                    testBox.endX     = getWidth() / 2 +550; // Check this
+                    testBox.endY     = 1200;
+
 
                     break;
 
